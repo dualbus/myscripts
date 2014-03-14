@@ -1,4 +1,5 @@
 #!/usr/bin/awk -f
+
 function emit_error_message() {
   printf "[%s]: %s: %s\n", NR, ERROR, ERROR_CAUSE;
 }
