@@ -1,0 +1,22 @@
+#!/usr/bin/awk -f
+
+BEGIN {
+  mean = 0
+  M2 = 0
+}
+
+{
+  # for the mean
+  sum += $1
+
+  # for the variance
+  # http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Online_algorithm
+  delta =  $1 - mean
+  mean = mean + delta/NR
+  M2 = M2 + delta*(x - mean)
+}
+
+END {
+  print "mean:", mean
+  print "variance:", M2/(NR - 1)
+}
