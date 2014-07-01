@@ -1,22 +1,29 @@
 #!/usr/bin/awk -f
 
 BEGIN {
-  mean = 0
-  M2 = 0
+  n = M1 = M2 = M3 = M4 = 0
 }
 
 {
-  # for the mean
-  sum += $1
+  x = $1
+  n1 = n
+  n = NR
 
-  # for the variance
-  # http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Online_algorithm
-  delta =  $1 - mean
-  mean = mean + delta/NR
-  M2 = M2 + delta*(x - mean)
+  # See: http://www.johndcook.com/skewness_kurtosis.html
+  delta = x - M1;
+  delta_n = delta / n;
+  delta_n2 = delta_n * delta_n;
+  term1 = delta * delta_n * n1;
+  M1 += delta_n;
+  M4 += term1 * delta_n2 * (n*n - 3*n + 3) + 6 * delta_n2 * M2 - 4 * delta_n * M3;
+  M3 += term1 * delta_n * (n-2) - 3 * delta_n * M2;
+  M2 += term1;
 }
 
 END {
-  print "mean:", mean
-  print "variance:", M2/(NR - 1)
+  print "mean:", M1
+  print "variance:", M2/n
+  print "stddev:", sqrt(M2/n)
+  print "skewness:", sqrt(n) * M3/(M2^1.5)
+  print "kurtosis:", (n*M4)/(M2*M2) - 3
 }
