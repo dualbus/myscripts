@@ -1,1 +1,6 @@
-../src/awk/coin
+#!/bin/sh
+awk '
+BEGIN{
+  srand();
+  print int(2*rand()) ? "H" : "T"
+}'

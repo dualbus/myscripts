@@ -1,1 +1,37 @@
-../src/sh/unixdate
+#!/bin/sh
+
+# title: POSIX UNIX timestamp
+# author: dualbus
+# Compute a UNIX timestamp using only features from the POSIX shell
+# and the POSIX date utility. It uses the following formula:
+#
+# tm_sec + tm_min*60 + tm_hour*3600 + tm_yday*86400 +
+#     (tm_year-70)*31536000 + ((tm_year-69)/4)*86400 -
+#         ((tm_year-1)/100)*86400 + ((tm_year+299)/400)*86400
+#
+# Taken from:
+# <http://pubs.opengroup.org/onlinepubs/009695399/basedefs/xbd_chap04.html#tag_04_14>
+
+# Note:
+# The tm_yday variable is the difference in days since January 1st,
+# so, tm_yday for January 1st is 0, for January 2nd is 1, and so on.
+# This is important, because the date utility returns January 1st as
+# 1, so there's an offset of one.
+
+read -r year month day hour minute second year_day <<eof
+$(date -u +'%Y %m %d %H %M %S %j')
+eof
+
+for var in month day hour minute second year_day year_day; do
+  eval "$var=\${$var#0}"
+done
+
+year_adjusted=$((year - 1900))
+
+timestamp=$((second + minute*60 + hour*3600))
+timestamp=$((timestamp + (year_day-1)*86400 + (year_adjusted-70)*31536000))
+timestamp=$((timestamp + ((year_adjusted -  69)/  4)*86400))
+timestamp=$((timestamp - ((year_adjusted -   1)/100)*86400))
+timestamp=$((timestamp + ((year_adjusted + 299)/400)*86400))
+
+printf %s\\n "$timestamp"

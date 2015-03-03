@@ -1,0 +1,38 @@
+#!/usr/bin/awk -f
+BEGIN {
+    b64t = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+
+    cmd = "od -v -A n -t u1"
+    
+    k = 1; o = 1
+    while(0 < (cmd|getline)) {
+        for(i = 1; i <= NF; i++){
+            if(k == 1) {
+                x[1] = int($i/4)
+                x[2] = ($i%4)*16
+            } else
+            if(k == 2) {
+                x[2] += int($i/16)
+                x[3] = ($i%16)*4
+            } else {
+                x[3] += int($i/64)
+                x[4] = $i%64
+                for(j = 1; j <= 4; j++) {
+                    printf "%s%s", (64 == o=o%64+1)?"\n":"", substr(b64t, x[j]+1, 1)
+                }
+            }
+            k = k%3 + 1
+        }
+    }
+
+    if(k > 1) {
+        for(j = 1; j <= k; j++)
+            printf "%s%s", (64 == o=o%64+1)?"\n":"", substr(b64t, x[j]+1, 1)
+        for(j = 4 - k; j > 0; j--)
+            printf "%s%s", (64 == o=o%64+1)?"\n":"", "="
+    }
+
+    print ""
+
+    close(cmd)
+}
